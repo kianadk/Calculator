@@ -8,18 +8,74 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+class ViewController: UIViewController{
+    
+    
+    @IBOutlet private weak var display: UILabel!
+    
+    @IBOutlet private weak var displayDescription: UILabel!
+    
+    
+    private var userIsInTheMiddleOfTyping = false
+    private var displayValueHasDecimal = false
+    
+    @IBAction private func touchDigit(sender: UIButton){
+        let digit = sender.currentTitle!
+        if userIsInTheMiddleOfTyping{
+            let textCurrentlyInDisplay = display.text!
+            display.text = textCurrentlyInDisplay + digit
+        }
+        else{
+            display.text = digit
+        }
+        userIsInTheMiddleOfTyping = true
+    }
+    
+    
+    @IBAction private func addDecimal() {
+        if(!displayValueHasDecimal){
+            if(userIsInTheMiddleOfTyping){
+                display.text = display.text! + "."
+            }
+            else{
+                display.text = "0."
+                userIsInTheMiddleOfTyping = true
+            }
+            displayValueHasDecimal = true
+        }
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    private var displayValue: Double{
+        get{
+            return Double(display.text!)!
+        }
+        
+        set{
+            display.text = String(newValue)
+        }
     }
-
-
+    
+    private var brain = CalculatorBrain()
+    
+    @IBAction private func performOperation(sender: UIButton){
+        if(userIsInTheMiddleOfTyping){
+            brain.setOperand(displayValue)
+            userIsInTheMiddleOfTyping = false
+            displayValueHasDecimal = false
+        }
+        if let mathematicalSymbol = sender.currentTitle{
+            brain.performOperation(mathematicalSymbol)
+        }
+        displayValue = brain.result
+        if brain.isPartialResult{
+            displayDescription.text = brain.description + " ... "
+        } else{
+            displayDescription.text = brain.description + " = "
+        }
+        
+    }
+    
+    
 }
 
